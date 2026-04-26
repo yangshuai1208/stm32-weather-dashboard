@@ -93,6 +93,9 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 	WeatherData test_data;
+	PageType current_page=PAGE_REALTIME;
+	
+	
 	
 	test_data.temperature=25;
 	test_data.humidity=55;
@@ -104,13 +107,21 @@ int main(void)
 		OLED_UI_ShowBoot();
 		HAL_Delay(1000);
 		
-		OLED_UI_ShowRealtime(&test_data);
+		OLED_UI_ShowPage(current_page,&test_data);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		HAL_Delay(1500);
+		current_page++;
+		if(current_page>=PAGE_MAX)
+		{
+			current_page=PAGE_REALTIME;
+		}
+			OLED_UI_ShowPage(current_page,&test_data);
+		
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

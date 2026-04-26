@@ -31,7 +31,23 @@ void OLED_UI_ShowBoot(void)
     // 第2行：Weather
     OLED_ShowString_F8X16(2, 0, (uint8_t *)"Weather");
 }
-
+static	void OLED_UI_ShowComfortText(uint8_t line,uint8_t offset,ComfortLevel comfort)
+{
+		if(comfort==COMFORT_GOOD)
+		{
+			OLED_ShowString_F8X16(line,offset,(uint8_t*)"Good");
+		}
+		else if(comfort==COMFORT_NORMAL)
+		{
+			OLED_ShowString_F8X16(line,offset,(uint8_t*)"Normal");
+		
+		}
+		else
+		{
+		
+			OLED_ShowString_F8X16(line,offset,(uint8_t*)"Bad");
+		}
+}
 void OLED_UI_ShowRealtime(WeatherData *data)
 {
     OLED_CLS();
@@ -51,16 +67,70 @@ void OLED_UI_ShowRealtime(WeatherData *data)
     OLED_ShowString_F8X16(1, 7, (uint8_t *)"%");
 
     // 第3行：舒适度英文状态
-    if (data->comfort == COMFORT_GOOD)
-    {
-        OLED_ShowString_F8X16(3, 0, (uint8_t *)"Comfort:Good");
-    }
-    else if (data->comfort == COMFORT_NORMAL)
-    {
-        OLED_ShowString_F8X16(3, 0, (uint8_t *)"Comfort:Normal");
-    }
-    else
-    {
-        OLED_ShowString_F8X16(3, 0, (uint8_t *)"Comfort:Bad");
-    }
+	OLED_ShowString_F8X16(3,0,(uint8_t*)"Comfort:");
+	OLED_UI_ShowComfortText(3,8,data->comfort);
+ 
+}
+
+void 	OLED_UI_ShowComfort(WeatherData *data)
+{
+	OLED_CLS();
+	OLED_ShowString_F8X16(0,0,(uint8_t*)"Comfort:");
+	
+	OLED_ShowString_F8X16(1,0,(uint8_t*)"Temp:");
+	OLED_UI_Show2Digit(1,5,data->temperature);
+	OLED_ShowString_F8X16(1,7,(uint8_t*)"C");
+	
+	OLED_ShowString_F8X16(2,0,(uint8_t*)"Humi:");
+	OLED_UI_Show2Digit(2,5,data->humidity);
+	OLED_ShowString_F8X16(2,7,(uint8_t*)"%");
+	
+	OLED_ShowString_F8X16(3,0,(uint8_t*)"Level:");
+	OLED_UI_ShowComfortText(3,6,data->comfort);
+	
+	
+}
+void OLED_UI_ShowHistory(void)
+{
+	OLED_CLS();
+
+	OLED_ShowString_F8X16(0,0,(uint8_t*)"History");
+	OLED_ShowString_F8X16(1,0,(uint8_t*)"Temp Curve");
+	OLED_ShowString_F8X16(2,0,(uint8_t*)"No Flash Yet:");
+	OLED_ShowString_F8X16(3,0,(uint8_t*)"Day2 Test");
+	
+}	
+void OLED_UI_ShowSetting(void)
+{
+	OLED_CLS();
+	
+	OLED_ShowString_F8X16(0,0,(uint8_t*)"Setting:");
+	OLED_ShowString_F8X16(1,0,(uint8_t*)"Sample:5s");
+	OLED_ShowString_F8X16(2,0,(uint8_t*)"Save:ON");
+	OLED_ShowString_F8X16(3,0,(uint8_t*)"LED:Auto");
+}
+void OLED_UI_ShowPage(PageType page,WeatherData*data)
+{
+	switch(page)
+	{
+		case 	PAGE_REALTIME:
+		OLED_UI_ShowRealtime(data);
+		break;
+		
+		case	PAGE_COMFORT:
+		OLED_UI_ShowComfort(data);
+		break;
+	
+		case	PAGE_HISTORY:
+		OLED_UI_ShowHistory();
+		break;
+	
+		case		PAGE_SETTING:
+		OLED_UI_ShowSetting();
+		break;
+		
+		default	:
+			OLED_UI_ShowRealtime(data);
+			break;
+	}
 }
