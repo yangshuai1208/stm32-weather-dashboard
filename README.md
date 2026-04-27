@@ -67,3 +67,49 @@ Weather**
 温度:25C
 湿度:55%
 Comfort:Good
+
+
+### Day3：DHT11 温湿度采集接入
+
+已完成：
+
+- 新增 DHT11 温湿度传感器驱动
+- 使用 PB8 作为 DHT11_DATA 引脚
+- 配置 DHT11_DATA 为开漏输出并上拉
+- 新增 DWT 微秒级延时模块
+- 实现 DHT11 起始信号、响应检测、40bit 数据读取和校验和判断
+- 将模拟温湿度数据替换为 DHT11 采集数据
+- 使用 WeatherData 结构体统一保存温度、湿度、舒适度和采样编号
+- 使用 HAL_GetTick() 实现非阻塞周期采集和页面切换
+
+## Day3 硬件连接
+
+| 模块 | 引脚 | STM32F103C8T6 |
+|---|---|---|
+| DHT11 | VCC | 3.3V |
+| DHT11 | GND | GND |
+| DHT11 | DATA | PB8 |
+
+## Day3 软件模块
+
+| 文件 | 作用 |
+|---|---|
+| dht11.c / dht11.h | DHT11 温湿度采集驱动 |
+| dwt_delay.c / dwt_delay.h | DWT 微秒级延时 |
+| main.c | 周期读取 DHT11 并更新 WeatherData |
+| gpio.c / main.h | DHT11_DATA 引脚初始化 |
+
+## 当前实验现象
+
+程序烧录后，OLED 正常显示多页面 UI。
+
+实时数据页显示 DHT11 采集到的温湿度数据：
+
+```text
+实时数据
+温度:xxC
+湿度:xx%
+舒适:好/中/差
+
+
+
