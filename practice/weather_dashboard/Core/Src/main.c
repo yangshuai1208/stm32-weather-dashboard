@@ -24,6 +24,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "oled_ui.h"
+#include "dht11.h"
+#include "dwt_delay.h"
+
 
 
 
@@ -58,6 +61,24 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static  ComfortLevel App_CalcComfort(uint8_t temp,uint8_t humi)
+{
+	if(temp>=20&&temp<=28&&humi>=40&&humi<=70)
+	{
+		return COMFORT_GOOD;
+	}
+	else	if(temp>=15&&temp<=32&&humi>=30&&humi<=80)
+	{
+		return COMFORT_NORMAL;
+	}
+	else
+	{
+		return COMFORT_BAD;
+	}
+
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -102,7 +123,8 @@ int main(void)
 	test_data.comfort=COMFORT_GOOD;
 	test_data.sample_id=1;
 	
-	
+		DWT_Delay_Init();
+		
 		OLED_UI_Init();
 		OLED_UI_ShowBoot();
 		HAL_Delay(1000);
@@ -114,14 +136,40 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		HAL_Delay(1500);
-		current_page++;
-		if(current_page>=PAGE_MAX)
-		{
-			current_page=PAGE_REALTIME;
-		}
-			OLED_UI_ShowPage(current_page,&test_data);
+		static uint32_t last_dht_time=0;
+		static uint32_t last_page_time=0;
 		
+		if(HAL_GetTick()-last_dht_time>=2000)
+		{
+			last_dht_time=HAL_GetTick();
+			
+			uint8_t temp=0;
+			uint8_t humi=0;
+		
+			if(DHT11_Read(&temp,&humi)==DHT11_OK)
+			{
+				test_data.temperature=temp;
+				test_data.humidity=humi;
+				test_data.comfort=App_CalcComfort(temp,humi);
+				test_data.sample_id++;
+			}
+			
+	
+		
+		if(HAL_GetTick()-last_page_time>=1500)
+		{
+			last_page_time=HAL_GetTick();
+			current_page++;
+			if(current_page>=PAGE_MAX)
+			{
+				current_page=PAGE_REALTIME;
+			}
+		
+		}
+	}
+		
+			OLED_UI_ShowPage(current_page,&test_data);
+			HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -183,6 +231,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+
   }
   /* USER CODE END Error_Handler_Debug */
 }
