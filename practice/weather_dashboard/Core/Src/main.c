@@ -26,7 +26,7 @@
 #include "oled_ui.h"
 #include "dht11.h"
 #include "dwt_delay.h"
-
+#include "ec11.h"
 
 
 
@@ -124,6 +124,7 @@ int main(void)
 	test_data.sample_id=1;
 	
 		DWT_Delay_Init();
+		EC11_Init();
 		
 		OLED_UI_Init();
 		OLED_UI_ShowBoot();
@@ -139,12 +140,45 @@ int main(void)
 		static uint32_t last_dht_time=0;
 		static uint32_t last_page_time=0;
 		
+			uint8_t temp=0;
+			uint8_t humi=0;
+			EC11_Event event;
+		
+			EC11_Update();
+			event=EC11_GetEvent();
+		
+		if(event==EC11_RIGHT)
+		{
+			current_page++;
+			if(current_page>=PAGE_MAX)
+			{
+				current_page=PAGE_REALTIME;
+			}
+		OLED_UI_ShowPage(current_page,&test_data);
+		}
+		 else if (event == EC11_LEFT)
+    {
+        if (current_page == PAGE_REALTIME)
+        {
+            current_page = PAGE_MAX - 1;
+        }
+        else
+        {
+            current_page--;
+        }
+
+      OLED_UI_ShowPage(current_page, &test_data);
+    }
+			else if(event==EC11_PRESS)
+			{
+				current_page=PAGE_SETTING;
+				OLED_UI_ShowPage(current_page,&test_data);
+			}
+			
 		if(HAL_GetTick()-last_dht_time>=2000)
 		{
 			last_dht_time=HAL_GetTick();
 			
-			uint8_t temp=0;
-			uint8_t humi=0;
 		
 			if(DHT11_Read(&temp,&humi)==DHT11_OK)
 			{
@@ -154,22 +188,19 @@ int main(void)
 				test_data.sample_id++;
 			}
 			
-	
+		}
 		
-		if(HAL_GetTick()-last_page_time>=1500)
+		if(HAL_GetTick()-last_page_time>=1000)
 		{
 			last_page_time=HAL_GetTick();
-			current_page++;
-			if(current_page>=PAGE_MAX)
-			{
-				current_page=PAGE_REALTIME;
-			}
+			OLED_UI_ShowPage(current_page,&test_data);
+			
 		
 		}
-	}
+	
 		
-			OLED_UI_ShowPage(current_page,&test_data);
-			HAL_Delay(500);
+	
+		
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

@@ -63,6 +63,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : EC11_A_Pin EC11_B_Pin EC11_SW_Pin */
+  GPIO_InitStruct.Pin = EC11_A_Pin|EC11_B_Pin|EC11_SW_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : DHT11_DATA_Pin */
   GPIO_InitStruct.Pin = DHT11_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
