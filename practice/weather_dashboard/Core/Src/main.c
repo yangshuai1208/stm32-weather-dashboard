@@ -137,30 +137,31 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		static uint32_t last_dht_time=0;
-		static uint32_t last_page_time=0;
-		
-			uint8_t temp=0;
-			uint8_t humi=0;
-			EC11_Event event;
-		
-			EC11_Update();
-			event=EC11_GetEvent();
-		
-		if(event==EC11_RIGHT)
-		{
-			current_page++;
-			if(current_page>=PAGE_MAX)
-			{
-				current_page=PAGE_REALTIME;
-			}
-		OLED_UI_ShowPage(current_page,&test_data);
-		}
-		 else if (event == EC11_LEFT)
+  
+        static uint32_t last_dht_time=0;
+        static uint32_t last_page_time=0;
+        
+            uint8_t temp=0;
+            uint8_t humi=0;
+            EC11_Event event;
+        
+            EC11_Update();
+            event=EC11_GetEvent();
+        
+        if(event==EC11_RIGHT)
+        {
+            current_page++;
+            if(current_page>=PAGE_MAX)
+            {
+                current_page=PAGE_REALTIME;
+            }
+        OLED_UI_ShowPage(current_page,&test_data);
+        }
+         else if (event == EC11_LEFT)
     {
         if (current_page == PAGE_REALTIME)
         {
-            current_page = PAGE_MAX - 1;
+            current_page = PAGE_SETTING;
         }
         else
         {
@@ -169,37 +170,41 @@ int main(void)
 
       OLED_UI_ShowPage(current_page, &test_data);
     }
-			else if(event==EC11_PRESS)
-			{
-				current_page=PAGE_SETTING;
-				OLED_UI_ShowPage(current_page,&test_data);
-			}
-			
-		if(HAL_GetTick()-last_dht_time>=2000)
-		{
-			last_dht_time=HAL_GetTick();
-			
-		
-			if(DHT11_Read(&temp,&humi)==DHT11_OK)
-			{
-				test_data.temperature=temp;
-				test_data.humidity=humi;
-				test_data.comfort=App_CalcComfort(temp,humi);
-				test_data.sample_id++;
-			}
-			
-		}
-		
-		if(HAL_GetTick()-last_page_time>=1000)
-		{
-			last_page_time=HAL_GetTick();
-			OLED_UI_ShowPage(current_page,&test_data);
-			
-		
-		}
-	
-		
-	
+            else if (event == EC11_PRESS)
+{
+    if (current_page == PAGE_SETTING)
+    {
+        current_page = PAGE_REALTIME;
+    }
+    else
+    {
+        current_page = PAGE_SETTING;
+    }
+
+    OLED_UI_ShowPage(current_page, &test_data);
+}
+        if(HAL_GetTick()-last_dht_time>=2000)
+        {
+            last_dht_time=HAL_GetTick();
+            
+        
+            if(DHT11_Read(&temp,&humi)==DHT11_OK)
+            {
+                test_data.temperature=temp;
+                test_data.humidity=humi;
+                test_data.comfort=App_CalcComfort(temp,humi);
+                test_data.sample_id++;
+            }
+            
+        }
+        
+        if(HAL_GetTick()-last_page_time>=1000)
+        {
+            last_page_time=HAL_GetTick();
+            OLED_UI_ShowPage(current_page,&test_data);
+            
+        
+        }
 		
     /* USER CODE END WHILE */
 
