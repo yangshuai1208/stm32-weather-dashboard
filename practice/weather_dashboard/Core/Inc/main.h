@@ -63,6 +63,12 @@ void Error_Handler(void);
 #define EC11_A_GPIO_Port GPIOB
 #define EC11_B_Pin GPIO_PIN_1
 #define EC11_B_GPIO_Port GPIOB
+#define LED_GOOD_Pin GPIO_PIN_12
+#define LED_GOOD_GPIO_Port GPIOB
+#define LED_NORMAL_Pin GPIO_PIN_13
+#define LED_NORMAL_GPIO_Port GPIOB
+#define LED_BAD_Pin GPIO_PIN_14
+#define LED_BAD_GPIO_Port GPIOB
 #define DHT11_DATA_Pin GPIO_PIN_8
 #define DHT11_DATA_GPIO_Port GPIOB
 

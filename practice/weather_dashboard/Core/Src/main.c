@@ -27,6 +27,7 @@
 #include "dht11.h"
 #include "dwt_delay.h"
 #include "ec11.h"
+#include "led_status.h"
 
 
 
@@ -127,10 +128,13 @@ int main(void)
 		EC11_Init();
 		
 		OLED_UI_Init();
+		LED_Status_Init();
+		
 		OLED_UI_ShowBoot();
 		HAL_Delay(1000);
 		
 		OLED_UI_ShowPage(current_page,&test_data);
+		LED_Status_Update(test_data.comfort);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -194,6 +198,8 @@ int main(void)
                 test_data.humidity=humi;
                 test_data.comfort=App_CalcComfort(temp,humi);
                 test_data.sample_id++;
+							
+							LED_Status_Update(test_data.comfort);
             }
             
         }
