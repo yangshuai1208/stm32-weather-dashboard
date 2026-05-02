@@ -40,6 +40,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define  APP_DHT_PERIOD_MS  2000U
+#define  APP_OLED_PERIOD_MS  1000U
 
 /* USER CODE END PD */
 
@@ -51,6 +53,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static WeatherData g_weather_data;
+static PageType g_current_page=PAGE_REALTIME;
+
+static uint8_t g_oled_need_refresh=1;
 
 /* USER CODE END PV */
 
@@ -78,9 +84,116 @@ static  ComfortLevel App_CalcComfort(uint8_t temp,uint8_t humi)
 	}
 
 }
+static PageType App_GetNextPage(PageType page)
+{
+	switch(page)
+	{
+		case PAGE_REALTIME:
+			return 	PAGE_COMFORT;
+		
+		case PAGE_COMFORT: 
+			return PAGE_HISTORY;
+		
+		case PAGE_HISTORY:
+			return PAGE_SETTING;
+		
+		case PAGE_SETTING:
+		default:
+			return PAGE_REALTIME;
+	}
+}	
+static PageType App_GetPrevPage(PageType page)
+{
+	switch(page)
+	{
+		case PAGE_REALTIME:
+			return 	PAGE_SETTING;
+		
+		case PAGE_COMFORT: 
+			return PAGE_REALTIME;
+		
+		case PAGE_HISTORY:
+			return PAGE_COMFORT;
+		
+		case PAGE_SETTING:
+		default:
+			return PAGE_HISTORY;
+	}
+}	
+static void App_HandleEC11(void)
+{
+	EC11_Event event;
+	
+	EC11_Update();
+	event=EC11_GetEvent();
+	
+	if(event==EC11_RIGHT)
+	{
+		g_current_page=App_GetNextPage(g_current_page);
+		g_oled_need_refresh=1;
+	}
+	else if(event==EC11_LEFT)
+	{
+		g_current_page=App_GetPrevPage(g_current_page);
+		g_oled_need_refresh=1;
+	}
+	else if(event==EC11_PRESS)
+	{
+		if(g_current_page==PAGE_SETTING)
+		{
+			g_current_page=PAGE_REALTIME;
+		}
+		else
+		{
+			g_current_page=PAGE_SETTING;
+		}
+		g_oled_need_refresh=1;
+	}
+}
+static void App_UpdateSensor(uint32_t now)
+{
+	static uint32_t last_dht_time=0;
 
+	uint8_t temp=0;
+	uint8_t humi=0;
+	
+	if(now-last_dht_time>=APP_DHT_PERIOD_MS)
+	{
+		last_dht_time=now;
+		if(DHT11_Read(&temp,&humi)==DHT11_OK)
+		{
+			g_weather_data.temperature=temp;
+			g_weather_data.humidity=humi;
+			g_weather_data.comfort=App_CalcComfort(temp,humi);
+			g_weather_data.sample_id++;
+			
+			LED_Status_Update(g_weather_data.comfort);
+		}
+	}		
+}			
+static void App_RefreshOLED(uint32_t now)
+{
+	static uint32_t last_oled_time=0;
+	
+	if(g_oled_need_refresh||(now-last_oled_time>=APP_OLED_PERIOD_MS))
+	{
+		last_oled_time=now;
+	
+	OLED_UI_ShowPage(g_current_page,&g_weather_data);
+	
+	g_oled_need_refresh=0;
+	}
+}
+static void App_DataInit(void)
+{
+	g_weather_data.temperature=25;
+	g_weather_data.humidity=55;
+	g_weather_data.comfort=COMFORT_GOOD;
+	g_weather_data.sample_id=1;
 
-
+	g_current_page=PAGE_REALTIME;
+	g_oled_need_refresh=1;
+}
 /* USER CODE END 0 */
 
 /**
@@ -114,16 +227,9 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-	WeatherData test_data;
-	PageType current_page=PAGE_REALTIME;
+		App_DataInit();
 	
-	
-	
-	test_data.temperature=25;
-	test_data.humidity=55;
-	test_data.comfort=COMFORT_GOOD;
-	test_data.sample_id=1;
-	
+
 		DWT_Delay_Init();
 		EC11_Init();
 		
@@ -133,84 +239,19 @@ int main(void)
 		OLED_UI_ShowBoot();
 		HAL_Delay(1000);
 		
-		OLED_UI_ShowPage(current_page,&test_data);
-		LED_Status_Update(test_data.comfort);
+		LED_Status_Update(g_weather_data.comfort);
+		OLED_UI_ShowPage(g_current_page,&g_weather_data);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-  
-        static uint32_t last_dht_time=0;
-        static uint32_t last_page_time=0;
-        
-            uint8_t temp=0;
-            uint8_t humi=0;
-            EC11_Event event;
-        
-            EC11_Update();
-            event=EC11_GetEvent();
-        
-        if(event==EC11_RIGHT)
-        {
-            current_page++;
-            if(current_page>=PAGE_MAX)
-            {
-                current_page=PAGE_REALTIME;
-            }
-        OLED_UI_ShowPage(current_page,&test_data);
-        }
-         else if (event == EC11_LEFT)
-    {
-        if (current_page == PAGE_REALTIME)
-        {
-            current_page = PAGE_SETTING;
-        }
-        else
-        {
-            current_page--;
-        }
-
-      OLED_UI_ShowPage(current_page, &test_data);
-    }
-            else if (event == EC11_PRESS)
-{
-    if (current_page == PAGE_SETTING)
-    {
-        current_page = PAGE_REALTIME;
-    }
-    else
-    {
-        current_page = PAGE_SETTING;
-    }
-
-    OLED_UI_ShowPage(current_page, &test_data);
-}
-        if(HAL_GetTick()-last_dht_time>=2000)
-        {
-            last_dht_time=HAL_GetTick();
-            
-        
-            if(DHT11_Read(&temp,&humi)==DHT11_OK)
-            {
-                test_data.temperature=temp;
-                test_data.humidity=humi;
-                test_data.comfort=App_CalcComfort(temp,humi);
-                test_data.sample_id++;
-							
-							LED_Status_Update(test_data.comfort);
-            }
-            
-        }
-        
-        if(HAL_GetTick()-last_page_time>=1000)
-        {
-            last_page_time=HAL_GetTick();
-            OLED_UI_ShowPage(current_page,&test_data);
-            
-        
-        }
+		uint32_t now=HAL_GetTick();
+		
+		App_HandleEC11();
+		App_UpdateSensor(now);
+		App_RefreshOLED(now);
 		
     /* USER CODE END WHILE */
 
