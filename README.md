@@ -201,3 +201,33 @@ Comfort:Good
 ```text
 GPIO → 电阻 → LED 正极
 LED 负极 → GND
+
+
+### Day7：系统主循环整理与裸机任务调度
+
+已完成：
+
+- 整理 `main.c` 主循环结构
+- 将 EC11 页面交互逻辑封装为 `App_HandleEC11()`
+- 将 DHT11 采集逻辑封装为 `App_UpdateSensor()`
+- 将 OLED 刷新逻辑封装为 `App_RefreshOLED()`
+- 新增 `g_weather_data` 全局环境数据状态
+- 新增 `g_current_page` 当前页面状态
+- 新增 `g_oled_need_refresh` OLED 刷新标志
+- 使用 `HAL_GetTick()` 实现非阻塞周期调度
+- 保持 DHT11、OLED、EC11、LED 功能正常运行
+- 为后续 W25Q64 历史数据存储接入预留清晰主循环结构
+
+## Day7 系统调度结构
+
+当前主循环结构：
+
+```c
+while (1)
+{
+    uint32_t now = HAL_GetTick();
+
+    App_HandleEC11();
+    App_UpdateSensor(now);
+    App_RefreshOLED(now);
+}
