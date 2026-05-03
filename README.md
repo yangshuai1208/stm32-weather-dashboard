@@ -231,3 +231,47 @@ while (1)
     App_UpdateSensor(now);
     App_RefreshOLED(now);
 }
+### Day8：W25Q64 SPI Flash 驱动接入
+
+已完成：
+
+- 开启 SPI1 外设
+- 使用 PA5 作为 SPI1_SCK
+- 使用 PA6 作为 SPI1_MISO
+- 使用 PA7 作为 SPI1_MOSI
+- 使用 PA4 作为 W25Q64 片选 CS 引脚
+- 新增 `w25q64.h / w25q64.c`
+- 实现 W25Q64 JEDEC ID 读取
+- 实现 Write Enable 写使能
+- 实现状态寄存器 BUSY 位等待
+- 实现 4KB 扇区擦除
+- 实现 Page Program 页编程
+- 实现指定地址数据读取
+- 实现 Flash 读写自测试函数 `W25Q64_Test()`
+- OLED 启动阶段显示 W25Q64 测试结果
+
+## Day8 硬件连接
+
+| W25Q64 模块 | STM32F103C8T6 |
+|---|---|
+| VCC | 3.3V |
+| GND | GND |
+| CS / NSS | PA4 |
+| SCK / CLK | PA5 |
+| DO / MISO | PA6 |
+| DI / MOSI | PA7 |
+
+注意：
+
+- W25Q64 使用 3.3V 供电
+- CS 使用普通 GPIO 手动控制
+- SPI 模式为 Mode 0：CPOL=0，CPHA=0
+
+## Day8 实验现象
+
+程序烧录后，OLED 先显示启动页，然后显示 W25Q64 测试结果：
+
+```text
+W25Q64
+ID OK
+RW OK
