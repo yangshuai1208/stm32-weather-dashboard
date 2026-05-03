@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
+#include "spi.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -28,7 +29,8 @@
 #include "dwt_delay.h"
 #include "ec11.h"
 #include "led_status.h"
-
+#include "w25q64.h"
+#include "oled.h"
 
 
 /* USER CODE END Includes */
@@ -226,6 +228,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 		App_DataInit();
 	
@@ -240,7 +243,34 @@ int main(void)
 		HAL_Delay(1000);
 		
 		LED_Status_Update(g_weather_data.comfort);
-		OLED_UI_ShowPage(g_current_page,&g_weather_data);
+
+		uint32_t flash_id;
+		uint8_t flash_test_result;
+		
+		flash_id=W25Q64_ReadID();
+		flash_test_result=W25Q64_Test();
+		
+		OLED_CLS();
+		OLED_ShowString_F8X16(0,0,(uint8_t*)"W25Q64");
+	
+		if(flash_id!=0)
+		{
+			OLED_ShowString_F8X16(1,0,(uint8_t*)"ID OK");
+		}
+		else
+		{
+			OLED_ShowString_F8X16(1,0,(uint8_t*)"ID ERR");
+		}
+		if(flash_test_result==W25Q64_OK)
+		{
+				OLED_ShowString_F8X16(2,0,(uint8_t*)"RW OK");
+		}
+		else
+		{
+				OLED_ShowString_F8X16(2,0,(uint8_t*)"RW ERR");
+		}
+			HAL_Delay(1500);
+			OLED_UI_ShowPage(g_current_page,&g_weather_data);
   /* USER CODE END 2 */
 
   /* Infinite loop */

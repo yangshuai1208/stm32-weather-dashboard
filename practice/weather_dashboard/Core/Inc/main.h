@@ -59,6 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define EC11_SW_Pin GPIO_PIN_2
 #define EC11_SW_GPIO_Port GPIOA
+#define W25Q64_CS_Pin GPIO_PIN_4
+#define W25Q64_CS_GPIO_Port GPIOA
 #define EC11_A_Pin GPIO_PIN_0
 #define EC11_A_GPIO_Port GPIOB
 #define EC11_B_Pin GPIO_PIN_1
