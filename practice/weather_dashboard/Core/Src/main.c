@@ -171,9 +171,28 @@ static void App_UpdateSensor(uint32_t now)
 			
 			LED_Status_Update(g_weather_data.comfort);
 			
-			HistoryStorage_SaveWeather(&g_weather_data);
+			if(HistoryStorage_SaveWeather(&g_weather_data)==HISTORY_OK)
+			{
+				HistoryRecord record;
+				uint16_t count;
+				
+				count=HistoryStorage_GetCount();
+				
+				if(count>0)
+				{
+					if(HistoryStorage_ReadRecord(count-1,&record)==HISTORY_OK)
+					{
+						OLED_UI_SetHistoryInfo(
+																		count,
+																		record.temperature,
+																		record.humidity,
+																		1);
+					}
+				}	
+			}
 			
-			g_oled_need_refresh=1;
+						g_oled_need_refresh=1;			
+						
 		}
 	}		
 }			
@@ -255,6 +274,7 @@ int main(void)
 		flash_test_result=W25Q64_Test();
 		
 		HistoryStorage_Init(1);
+		OLED_UI_SetHistoryInfo(0,0,0,0);
 		
 		OLED_CLS();
 		OLED_ShowString_F8X16(0,0,(uint8_t*)"W25Q64");

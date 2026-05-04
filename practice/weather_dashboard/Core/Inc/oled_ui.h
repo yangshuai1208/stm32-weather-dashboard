@@ -35,6 +35,7 @@ void OLED_UI_ShowBoot(void);
 void OLED_UI_ShowRealtime(WeatherData*data);
 void OLED_UI_ShowComfort(WeatherData*data);
 void OLED_UI_ShowHistory(void);
+void OLED_UI_SetHistoryInfo(uint16_t count,uint8_t temp,uint8_t humi,uint8_t vaild);
 void OLED_UI_ShowSetting(void);
 
 void OLED_UI_ShowPage(PageType page,WeatherData*data);

@@ -38,6 +38,12 @@ typedef enum
     CN_YE
 } ChineseIndex;
 
+static uint16_t g_history_count=0;
+static uint8_t g_history_temp=0;
+static uint8_t g_history_humi=0;
+static uint8_t g_history_vaild=0;
+
+
 
 
 
@@ -51,6 +57,25 @@ static void OLED_UI_Show2Digit(uint8_t line, uint8_t offset, uint8_t num)
 
     OLED_ShowString_F8X16(line, offset, (uint8_t *)buf);
 }
+static void OLED_UI_Show3Digit(uint8_t line, uint8_t offset, uint16_t num)
+{
+    char buf[4];
+		
+		if(num>999)
+		{
+			num=999;
+		}
+		
+    buf[0] = num / 100 + '0';
+    buf[1] = (num/10) % 10 + '0';
+		buf[2]=num%10+'0';
+    buf[3] = '\0';
+
+    OLED_ShowString_F8X16(line, offset, (uint8_t *)buf);
+}
+
+
+
 
 void OLED_UI_Init(void)
 {
@@ -161,10 +186,25 @@ void OLED_UI_ShowHistory(void)
     OLED_ShowChinese_F16X16(1, 1, CN_XIAN);         // 线
 
     // 第2行：暂无数据
-    OLED_ShowChinese_F16X16(2, 0, CN_ZAN);          // 暂
-    OLED_ShowChinese_F16X16(2, 1, CN_WU);           // 无
-    OLED_ShowChinese_F16X16(2, 2, CN_SHU_DATA);     // 数
-    OLED_ShowChinese_F16X16(2, 3, CN_JU);           // 据
+		if(g_history_vaild==0)
+		{	
+			OLED_ShowChinese_F16X16(2, 0, CN_ZAN);          // 暂
+			OLED_ShowChinese_F16X16(2, 1, CN_WU);           // 无
+			OLED_ShowChinese_F16X16(2, 2, CN_SHU_DATA);     // 数
+			OLED_ShowChinese_F16X16(2, 3, CN_JU);           // 据
+			return;
+		}
+		OLED_ShowString_F8X16(1,0,(uint8_t*)"Cnt:");
+		OLED_UI_Show3Digit(1,4,g_history_count);
+		
+		OLED_ShowString_F8X16(2,0,(uint8_t*)"Temp:");
+		OLED_UI_Show2Digit(2,5,g_history_temp);
+		OLED_ShowString_F8X16(2,7,(uint8_t*)"C");
+		
+		
+		OLED_ShowString_F8X16(3,0,(uint8_t*)"Humi:");
+		OLED_UI_Show2Digit(3,5,g_history_humi);
+		OLED_ShowString_F8X16(3,7,(uint8_t*)"%");
 }
 void OLED_UI_ShowSetting(void)
 {
@@ -213,3 +253,26 @@ void OLED_UI_ShowPage(PageType page,WeatherData*data)
 			break;
 	}
 }
+void OLED_UI_SetHistoryInfo(uint16_t count,uint8_t temp,uint8_t humi,uint8_t vaild)
+{
+	 g_history_count=count;
+	 g_history_temp=temp;
+   g_history_humi=humi;
+   g_history_vaild=vaild;
+}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
