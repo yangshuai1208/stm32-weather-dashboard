@@ -31,7 +31,7 @@
 #include "led_status.h"
 #include "w25q64.h"
 #include "oled.h"
-
+#include "history_storage.h" 
 
 /* USER CODE END Includes */
 
@@ -170,6 +170,10 @@ static void App_UpdateSensor(uint32_t now)
 			g_weather_data.sample_id++;
 			
 			LED_Status_Update(g_weather_data.comfort);
+			
+			HistoryStorage_SaveWeather(&g_weather_data);
+			
+			g_oled_need_refresh=1;
 		}
 	}		
 }			
@@ -249,6 +253,8 @@ int main(void)
 		
 		flash_id=W25Q64_ReadID();
 		flash_test_result=W25Q64_Test();
+		
+		HistoryStorage_Init(1);
 		
 		OLED_CLS();
 		OLED_ShowString_F8X16(0,0,(uint8_t*)"W25Q64");
