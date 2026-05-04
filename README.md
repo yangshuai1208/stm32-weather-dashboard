@@ -275,3 +275,38 @@ while (1)
 W25Q64
 ID OK
 RW OK
+
+### Day9：温湿度历史记录存储
+
+已完成：
+
+- 新增 `history_storage.h / history_storage.c` 历史记录存储模块
+- 设计 `HistoryRecord` 历史记录结构体
+- 每条历史记录包含采样编号、温度、湿度、舒适度和校验值
+- 使用 W25Q64 从 `0x001000` 地址开始保存历史数据
+- 每次 DHT11 采集成功后，将当前 `WeatherData` 保存到 W25Q64
+- 实现历史记录保存接口 `HistoryStorage_SaveWeather()`
+- 实现历史记录读取接口 `HistoryStorage_ReadRecord()`
+- 实现历史记录计数接口 `HistoryStorage_GetCount()`
+- 保持 OLED、EC11、LED、DHT11 原有功能正常运行
+
+## Day9 历史记录结构
+
+```c
+typedef __packed struct
+{
+    uint16_t sample_id;
+    uint8_t  temperature;
+    uint8_t  humidity;
+    uint8_t  comfort;
+    uint8_t  reserved;
+    uint16_t checksum;
+} HistoryRecord;
+
+
+
+
+
+
+
+
