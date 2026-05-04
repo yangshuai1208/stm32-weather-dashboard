@@ -303,7 +303,27 @@ typedef __packed struct
     uint16_t checksum;
 } HistoryRecord;
 
+### Day10：历史记录页数据显示
 
+已完成：
+
+- 修改 OLED 历史页显示逻辑
+- 新增 `OLED_UI_SetHistoryInfo()` 接口
+- 在 DHT11 采集成功后保存历史记录到 W25Q64
+- 保存成功后读取最新一条历史记录
+- 将历史记录数量、最新温度、最新湿度传递给 OLED UI
+- 历史页显示当前记录数量、最新温度和最新湿度
+- 保持 EC11 页面切换、LED 舒适度指示、DHT11 采集功能正常运行
+
+## Day10 历史页显示内容
+
+历史页当前显示：
+
+```text
+历史
+Cnt:001
+Temp:26C
+Humi:55%
 
 
 
