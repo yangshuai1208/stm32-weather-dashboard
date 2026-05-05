@@ -29,6 +29,13 @@ typedef struct
 
 }WeatherData;
 
+void OLED_UI_SetTrendInfo(uint8_t t0,
+													uint8_t  t1,
+													uint8_t  t2,
+													uint8_t  t3,
+													uint8_t  trend,
+													uint8_t   vaild);
+
 void OLED_UI_Init(void);
 void OLED_UI_ShowBoot(void);
 

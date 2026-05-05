@@ -43,9 +43,9 @@ static uint8_t g_history_temp=0;
 static uint8_t g_history_humi=0;
 static uint8_t g_history_vaild=0;
 
-
-
-
+static uint8_t g_trend_temp[4]={0};
+static uint8_t g_trend_type=00;
+static uint8_t g_trend_valid=0;
 
 static void OLED_UI_Show2Digit(uint8_t line, uint8_t offset, uint8_t num)
 {
@@ -173,6 +173,24 @@ void OLED_UI_ShowComfort(WeatherData *data)
     OLED_ShowString_F8X16(3, 4, (uint8_t *)":");
     OLED_UI_ShowComfortChinese(3, 3, data->comfort);
 }
+	static void OLED_UI_ShowTrendText(uint8_t line,uint8_t offset,uint8_t trend)
+	{
+		if(trend==1)
+		{
+			OLED_ShowString_F8X16(line,offset,(uint8_t*)"Up");
+		}
+		else if(trend==2)
+		{
+			OLED_ShowString_F8X16(line,offset,(uint8_t*)"Down");
+		}
+		else
+		{
+			OLED_ShowString_F8X16(line,offset,(uint8_t*)"Stable");
+		}
+	}
+
+
+
 void OLED_UI_ShowHistory(void)
 {
     OLED_CLS();
@@ -196,15 +214,34 @@ void OLED_UI_ShowHistory(void)
 		}
 		OLED_ShowString_F8X16(1,0,(uint8_t*)"Cnt:");
 		OLED_UI_Show3Digit(1,4,g_history_count);
-		
+		if(g_trend_valid)
+		{
+		OLED_ShowString_F8X16(2,0,(uint8_t*)"T:");
+		OLED_UI_Show2Digit(2,2,g_trend_temp[0]);
+		OLED_ShowString_F8X16(2,4,(uint8_t*)"");
+		OLED_UI_Show2Digit(2,5,g_trend_temp[1]);
+		OLED_ShowString_F8X16(2,7,(uint8_t*)"");
+		OLED_UI_Show2Digit(2,8,g_trend_temp[2]);
+		OLED_ShowString_F8X16(2,10,(uint8_t*)"");
+		OLED_UI_Show2Digit(2,11,g_trend_temp[3]);
+			
+		OLED_ShowString_F8X16(3,0,(uint8_t*)"Trend");
+		OLED_UI_ShowTrendText(3,6,g_trend_type);		
+			
+		}
+		else
+		{
 		OLED_ShowString_F8X16(2,0,(uint8_t*)"Temp:");
 		OLED_UI_Show2Digit(2,5,g_history_temp);
 		OLED_ShowString_F8X16(2,7,(uint8_t*)"C");
+			
+			
+ OLED_ShowString_F8X16(3, 0, (uint8_t *)"Humi:");
+   OLED_UI_Show2Digit(3, 5, g_history_humi);
+   OLED_ShowString_F8X16(3, 7, (uint8_t *)"%");
+		}
+	
 		
-		
-		OLED_ShowString_F8X16(3,0,(uint8_t*)"Humi:");
-		OLED_UI_Show2Digit(3,5,g_history_humi);
-		OLED_ShowString_F8X16(3,7,(uint8_t*)"%");
 }
 void OLED_UI_ShowSetting(void)
 {
@@ -260,17 +297,22 @@ void OLED_UI_SetHistoryInfo(uint16_t count,uint8_t temp,uint8_t humi,uint8_t vai
    g_history_humi=humi;
    g_history_vaild=vaild;
 }
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+void OLED_UI_SetTrendInfo(uint8_t t0,
+													uint8_t  t1,
+													uint8_t  t2,
+													uint8_t  t3,
+													uint8_t  trend,
+													uint8_t   vaild)
+	{
+		g_trend_temp[0]=t0;
+		g_trend_temp[1]=t1;
+		g_trend_temp[2]=t2;
+		g_trend_temp[3]=t3;
+		g_trend_type=trend;
+		g_trend_valid=vaild;
+	}
+
 	
 	
 	

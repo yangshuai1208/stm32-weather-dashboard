@@ -152,6 +152,56 @@ static void App_HandleEC11(void)
 		g_oled_need_refresh=1;
 	}
 }
+static void App_UpdateHistoryTrend(void)
+{
+	uint16_t count;
+	uint16_t start_index;
+	HistoryRecord record;
+	uint8_t temp[4]={0};
+	uint8_t i;
+	uint8_t trend=0;
+	
+	count=HistoryStorage_GetCount();
+	
+	if(count<4)
+	{
+		OLED_UI_SetTrendInfo(0,0,0,0,0,0);
+		return;
+	}
+	start_index=count-4;
+	for(i=0;i<4;i++)
+	{
+		if(HistoryStorage_ReadRecord(start_index+i,&record)==HISTORY_OK)
+		{
+			temp[i]=record.temperature;
+		}
+		else
+		{
+		OLED_UI_SetTrendInfo(0,0,0,0,0,0);
+		return;
+		}
+	}	
+		if(temp[3]>temp[0])
+		{
+			trend=1;
+		}
+		else if(temp[3]<temp[0])
+		{
+			trend=2;
+		}
+		else
+		{
+			trend=0;
+		}
+		OLED_UI_SetTrendInfo(
+		temp[0],
+		temp[1],
+		temp[2],
+		temp[3],
+		trend,
+		1);
+	}
+
 static void App_UpdateSensor(uint32_t now)
 {
 	static uint32_t last_dht_time=0;
@@ -191,7 +241,8 @@ static void App_UpdateSensor(uint32_t now)
 				}	
 			}
 			
-						g_oled_need_refresh=1;			
+						g_oled_need_refresh=1;	
+						App_UpdateHistoryTrend();
 						
 		}
 	}		
@@ -219,6 +270,8 @@ static void App_DataInit(void)
 	g_current_page=PAGE_REALTIME;
 	g_oled_need_refresh=1;
 }
+
+
 /* USER CODE END 0 */
 
 /**
@@ -275,6 +328,7 @@ int main(void)
 		
 		HistoryStorage_Init(1);
 		OLED_UI_SetHistoryInfo(0,0,0,0);
+		OLED_UI_SetTrendInfo(0,0,0,0,0,0);
 		
 		OLED_CLS();
 		OLED_ShowString_F8X16(0,0,(uint8_t*)"W25Q64");
