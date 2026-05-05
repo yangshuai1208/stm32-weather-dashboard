@@ -1,333 +1,51 @@
-# stm32-weather-dashboard
-**# STM32 旋钮式环境天气仪表盘
+# 旋钮天气仪表盘
 
 ## 1. 项目简介
 
-本项目基于 STM32F103C8T6 开发板，使用 STM32CubeMX + HAL 库进行开发，计划实现一个带有 OLED 显示、DHT11 温湿度采集、EC11 旋钮交互、LED 舒适度指示和 W25Q64 历史数据存储功能的环境天气仪表盘。
+本项目基于 STM32F103C8T6，使用 HAL 库和 STM32CubeMX 开发，实现一个带旋钮交互、OLED 显示、温湿度采集、舒适度指示和历史数据存储的桌面天气仪表盘。
 
-当前项目采用 12 天迭代开发方式，从 OLED 基础显示开始，逐步完成传感器采集、页面切换、数据存储和历史曲线显示。
+系统通过 DHT11 采集温湿度，OLED 显示实时数据和历史趋势，EC11 旋钮用于页面切换，LED 用于显示环境舒适度，W25Q64 用于保存历史温湿度记录。
 
-## 2. 当前进度
+## 2. 项目功能
 
-### Day1：OLED 基础显示
+- DHT11 温湿度采集
+- OLED 中文/英文混合显示
+- EC11 旋钮页面切换
+- EC11 按键进入/退出设置页
+- LED 舒适度状态指示
+- W25Q64 SPI Flash 基础读写
+- 温湿度历史记录存储
+- 历史页显示最新记录
+- 最近 4 条温度趋势显示
 
-已完成：
+## 3. 硬件组成
 
-- 使用 STM32CubeMX 创建 STM32F103C8T6 工程
-- 配置 I2C1 外设
-- 使用 PB6 作为 I2C1_SCL
-- 使用 PB7 作为 I2C1_SDA
-- 移植 OLED 显示驱动
-- 添加 16x16 中文字库和 ASCII 字库
-- 新增 oled_ui 页面显示模块
-- 实现 OLED 启动页显示
-- 实现模拟温湿度数据显示
-
-## 3. 当前显示效果
-
-启动页：
-
-```text
-兰州理工
-Weather**
-## 当前进度
-
-### Day1：OLED 基础显示
-
-已完成：
-
-- 使用 STM32CubeMX 创建工程
-- 配置 I2C1 外设
-- PB6 作为 I2C1_SCL
-- PB7 作为 I2C1_SDA
-- 移植 OLED 底层驱动
-- 添加 OLED 字库文件
-- 实现 OLED 启动页
-- 实现模拟温湿度数据显示
-
-### Day2：OLED 多页面 UI 框架
-
-已完成：
-
-- 新增 PageType 页面枚举
-- 新增 4 个 OLED 页面：
-  - 实时数据页
-  - 舒适度页
-  - 历史页占位
-  - 设置页占位
-- 新增 OLED_UI_ShowPage() 统一页面显示接口
-- 使用测试数据实现页面自动切换
-- 为后续 EC11 旋钮切换页面做准备
-
-## 当前页面效果
-
-### 1. 实时数据页
-
-```text
-温度:25C
-湿度:55%
-Comfort:Good
-
-
-### Day3：DHT11 温湿度采集接入
-
-已完成：
-
-- 新增 DHT11 温湿度传感器驱动
-- 使用 PB8 作为 DHT11_DATA 引脚
-- 配置 DHT11_DATA 为开漏输出并上拉
-- 新增 DWT 微秒级延时模块
-- 实现 DHT11 起始信号、响应检测、40bit 数据读取和校验和判断
-- 将模拟温湿度数据替换为 DHT11 采集数据
-- 使用 WeatherData 结构体统一保存温度、湿度、舒适度和采样编号
-- 使用 HAL_GetTick() 实现非阻塞周期采集和页面切换
-
-## Day3 硬件连接
-
-| 模块 | 引脚 | STM32F103C8T6 |
+| 模块 | 功能 | 引脚 |
 |---|---|---|
-| DHT11 | VCC | 3.3V |
-| DHT11 | GND | GND |
-| DHT11 | DATA | PB8 |
+| STM32F103C8T6 | 主控 | - |
+| OLED 0.96寸 I2C | 页面显示 | PB6/PB7 |
+| DHT11 | 温湿度采集 | PB8 |
+| EC11 | 页面切换 | PB0/PB1/PA2 |
+| LED | 舒适度指示 | PB12/PB13/PB14 |
+| W25Q64 | 历史数据存储 | PA4/PA5/PA6/PA7 |
 
-## Day3 软件模块
-
-| 文件 | 作用 |
-|---|---|
-| dht11.c / dht11.h | DHT11 温湿度采集驱动 |
-| dwt_delay.c / dwt_delay.h | DWT 微秒级延时 |
-| main.c | 周期读取 DHT11 并更新 WeatherData |
-| gpio.c / main.h | DHT11_DATA 引脚初始化 |
-
-## 当前实验现象
-
-程序烧录后，OLED 正常显示多页面 UI。
-
-实时数据页显示 DHT11 采集到的温湿度数据：
+## 4. 软件架构
 
 ```text
-实时数据
-温度:xxC
-湿度:xx%
+main.c
+├── App_HandleEC11()          // 旋钮事件处理
+├── App_UpdateSensor()        // DHT11 采集
+├── App_UpdateHistoryTrend()  // 历史趋势分析
+└── App_RefreshOLED()         // OLED 刷新调度
 
-### Day4：EC11 旋钮交互接入
-
-已完成：
-
-- 新增 `ec11.h / ec11.c` 旋钮驱动模块
-- 使用 PA0 作为 EC11_A
-- 使用 PA1 作为 EC11_B
-- 使用 PA2 作为 EC11_SW
-- 配置 PA0/PA1/PA2 为 GPIO 输入上拉
-- 实现 EC11 左旋、右旋、按下事件识别
-- 使用 `EC11_Update()` 周期扫描旋钮状态
-- 使用 `EC11_GetEvent()` 获取并清除旋钮事件
-- 实现右旋切下一页、左旋切上一页、按下进入设置页
-
-## Day4 硬件连接
-
-| EC11 模块 | STM32F103C8T6 |
-|---|---|
-| VCC | 3.3V |
-| GND | GND |
-| C | GND |
-| A | PA0 |
-| B | PA1 |
-| SW | PA2 |
-
-## Day4 实验现象
-
-程序烧录后，OLED 显示项目页面：
-
-```text
-实时数据
-温度:xxC
-湿度:xx%
-舒适:好/中/差
-
-舒适:好/中/差
-
-### Day5：EC11 页面交互优化与消抖
-
-已完成：
-
-- 优化 EC11 旋钮交互逻辑
-- 增加旋钮旋转消抖
-- 增加 EC11 按键消抖
-- 右旋切换到下一页
-- 左旋切换到上一页
-- 按下进入或退出设置页
-- 取消 OLED 无条件高频刷新
-- 保留 DHT11 每 2 秒周期采集
-- 保留 OLED 每 1 秒刷新当前页面
-- 初步形成“旋钮输入 → 页面状态切换 → OLED 显示”的交互链路
-
-## Day5 交互逻辑
-
-| EC11 操作 | 系统响应 |
-|---|---|
-| 右旋 | 切换到下一页 |
-| 左旋 | 切换到上一页 |
-| 按下 | 设置页 / 实时数据页切换 |
-
-页面顺序：
-
-```text
-实时数据 → 舒适 → 历史 → 设置 → 实时数据
-
-### Day6：LED 舒适度指示
-
-已完成：
-
-- 新增 `led_status.h / led_status.c` LED 状态指示模块
-- 使用 PB12 作为舒适状态绿灯输出
-- 使用 PB13 作为一般状态黄灯输出
-- 使用 PB14 作为不舒适状态红灯输出
-- 将 LED 状态与 `ComfortLevel` 舒适度枚举绑定
-- DHT11 采集成功后，根据温湿度重新计算舒适度
-- OLED 显示舒适度结果，LED 同步显示环境状态
-- 保持 EC11 页面切换功能正常运行
-
-## Day6 硬件连接
-
-| LED 功能 | STM32 引脚 | LED 颜色 | 状态含义 |
-|---|---|---|---|
-| 舒适指示 | PB12 | 绿灯 | 环境舒适 |
-| 一般指示 | PB13 | 黄灯 | 环境一般 |
-| 不舒适指示 | PB14 | 红灯 | 环境不舒适 |
-
-接线方式：
-
-```text
-GPIO → 电阻 → LED 正极
-LED 负极 → GND
-
-
-### Day7：系统主循环整理与裸机任务调度
-
-已完成：
-
-- 整理 `main.c` 主循环结构
-- 将 EC11 页面交互逻辑封装为 `App_HandleEC11()`
-- 将 DHT11 采集逻辑封装为 `App_UpdateSensor()`
-- 将 OLED 刷新逻辑封装为 `App_RefreshOLED()`
-- 新增 `g_weather_data` 全局环境数据状态
-- 新增 `g_current_page` 当前页面状态
-- 新增 `g_oled_need_refresh` OLED 刷新标志
-- 使用 `HAL_GetTick()` 实现非阻塞周期调度
-- 保持 DHT11、OLED、EC11、LED 功能正常运行
-- 为后续 W25Q64 历史数据存储接入预留清晰主循环结构
-
-## Day7 系统调度结构
-
-当前主循环结构：
-
-```c
-while (1)
-{
-    uint32_t now = HAL_GetTick();
-
-    App_HandleEC11();
-    App_UpdateSensor(now);
-    App_RefreshOLED(now);
-}
-### Day8：W25Q64 SPI Flash 驱动接入
-
-已完成：
-
-- 开启 SPI1 外设
-- 使用 PA5 作为 SPI1_SCK
-- 使用 PA6 作为 SPI1_MISO
-- 使用 PA7 作为 SPI1_MOSI
-- 使用 PA4 作为 W25Q64 片选 CS 引脚
-- 新增 `w25q64.h / w25q64.c`
-- 实现 W25Q64 JEDEC ID 读取
-- 实现 Write Enable 写使能
-- 实现状态寄存器 BUSY 位等待
-- 实现 4KB 扇区擦除
-- 实现 Page Program 页编程
-- 实现指定地址数据读取
-- 实现 Flash 读写自测试函数 `W25Q64_Test()`
-- OLED 启动阶段显示 W25Q64 测试结果
-
-## Day8 硬件连接
-
-| W25Q64 模块 | STM32F103C8T6 |
-|---|---|
-| VCC | 3.3V |
-| GND | GND |
-| CS / NSS | PA4 |
-| SCK / CLK | PA5 |
-| DO / MISO | PA6 |
-| DI / MOSI | PA7 |
-
-注意：
-
-- W25Q64 使用 3.3V 供电
-- CS 使用普通 GPIO 手动控制
-- SPI 模式为 Mode 0：CPOL=0，CPHA=0
-
-## Day8 实验现象
-
-程序烧录后，OLED 先显示启动页，然后显示 W25Q64 测试结果：
-
-```text
-W25Q64
-ID OK
-RW OK
-
-### Day9：温湿度历史记录存储
-
-已完成：
-
-- 新增 `history_storage.h / history_storage.c` 历史记录存储模块
-- 设计 `HistoryRecord` 历史记录结构体
-- 每条历史记录包含采样编号、温度、湿度、舒适度和校验值
-- 使用 W25Q64 从 `0x001000` 地址开始保存历史数据
-- 每次 DHT11 采集成功后，将当前 `WeatherData` 保存到 W25Q64
-- 实现历史记录保存接口 `HistoryStorage_SaveWeather()`
-- 实现历史记录读取接口 `HistoryStorage_ReadRecord()`
-- 实现历史记录计数接口 `HistoryStorage_GetCount()`
-- 保持 OLED、EC11、LED、DHT11 原有功能正常运行
-
-## Day9 历史记录结构
-
-```c
-typedef __packed struct
-{
-    uint16_t sample_id;
-    uint8_t  temperature;
-    uint8_t  humidity;
-    uint8_t  comfort;
-    uint8_t  reserved;
-    uint16_t checksum;
-} HistoryRecord;
-
-### Day10：历史记录页数据显示
-
-已完成：
-
-- 修改 OLED 历史页显示逻辑
-- 新增 `OLED_UI_SetHistoryInfo()` 接口
-- 在 DHT11 采集成功后保存历史记录到 W25Q64
-- 保存成功后读取最新一条历史记录
-- 将历史记录数量、最新温度、最新湿度传递给 OLED UI
-- 历史页显示当前记录数量、最新温度和最新湿度
-- 保持 EC11 页面切换、LED 舒适度指示、DHT11 采集功能正常运行
-
-## Day10 历史页显示内容
-
-历史页当前显示：
-
-```text
-历史
-Cnt:001
-Temp:26C
-Humi:55%
-### Day11：历史温度趋势显示
-
-已完成：
-
+drivers/modules
+├── dht11.c
+├── ec11.c
+├── oled_ui.c
+├── led_status.c
+├── w25q64.c
+├── history_storage.c
+└── dwt_delay.c
 - 在 Day10 历史页显示最新记录的基础上，增加最近 4 条温度趋势显示
 - 新增 `OLED_UI_SetTrendInfo()` 接口
 - 在 OLED UI 层增加趋势缓存变量
